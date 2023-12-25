@@ -1,5 +1,5 @@
 class Game
-  attr_reader :deck, :value
+  attr_reader :deck, :value, :players, :dealer, :board
 
   # Assume bet size of 1
   # both ante and blind are 1 => one hand is 2
@@ -12,18 +12,9 @@ class Game
   end
 
   def restart
-    @dealers_cards = []
-    @preflop_cards = []
-    @postflop_cards = []
-    @player_cards = (0..@hands - 1).map { |idx| [idx, []] }.to_h
-    {
-      0 => [],
-      1 => [],
-      2 => [],
-      3 => [],
-      4 => [],
-      5 => [],
-    }
+    @board = Board.new
+    @dealer = Dealer.new(@board)
+    @players = (0...@hands).map { |idx| [idx, Player.new(idx, @board)] }.to_h
     @deck = Deck.new
   end
 
@@ -38,84 +29,56 @@ class Game
   end
 
   def payout
-    dealer_hand = PokerHand.new(@dealers_cards + @preflop_cards + @postflop_cards)
+    dealer_hand = PokerHand.new(@dealer.full_hand)
 
-    @player_cards.each do |player, hand|
-      player_hand = PokerHand.new(hand + @preflop_cards + @postflop_cards)
+    @players.each do |idx, player|
+      player_hand = PokerHand.new(player.full_hand)
       payout = Payout.new(player_hand, dealer_hand).value
 
-      puts "Player #{ player } #{ payout > 0 ? 'WINS' : 'LOSES' } #{ payout }"
+      puts "Player #{ idx } #{ payout > 0 ? 'WINS' : 'LOSES' } #{ payout }"
       @value += payout
     end
+
+    nil
   end
 
   def deal_players(print = true)
-    starting_player = (0..5).to_a.sample
+    starting_idx = (0...@hands).to_a.sample
 
-    (0..5).each do |player|
-      player_idx = (starting_player + player) % 6
+    (0...@hands).each do |idx|
+      player_idx = (starting_idx + idx) % 6
 
-      @player_cards[player_idx] << deck.draw
-      @player_cards[player_idx] << deck.draw
+      @players[player_idx].deal_hand(@deck)
     end
 
     print_state if print
   end
 
   def deal_flop(print = true)
-    @deck.burn
-    @preflop_cards << @deck.draw
-    @preflop_cards << @deck.draw
-    @preflop_cards << @deck.draw
+    @board.deal_flop(@deck)
 
     print_state if print
   end
 
   def deal_postflop(print = true)
-    @deck.burn
-    @postflop_cards << @deck.draw
-    @deck.burn
-    @postflop_cards << @deck.draw
+    @board.deal_postflop(@deck)
 
     print_state if print
   end
 
   def deal_dealer(print = true)
-    @dealers_cards << @deck.draw
-    @dealers_cards << @deck.draw
+    @dealer.deal_hand(@deck)
 
     print_state if print
   end
 
   def print_state
     puts "=== GAME STATE ==="
-    puts "Dealer  : #{ hand_state_str(@dealers_cards) }"
-    puts "Board   : #{ cards_str(@preflop_cards, 3) } | #{ cards_str(@postflop_cards, 2) }"
+    puts @dealer
+    puts @board
 
-    (0..5).each do |player|
-      puts player_state_str(player)
-    end
-  end
-
-  def player_state_str(player)
-    hand = @player_cards[player]
-    "Player #{ player }: #{ hand_state_str(hand) }"
-  end
-
-  def hand_state_str(hand)
-    if !(@preflop_cards.size > 0 || @postflop_cards.size > 0)
-      cards_str(hand, 2)
-    else
-      poker_hand = PokerHand.new(hand + @preflop_cards + @postflop_cards)
-      "#{ cards_str(hand, 2) } [#{ poker_hand.rank }]"
-    end
-  end
-
-  def cards_str(cards, count)
-    if cards.length == 0
-      count.times.map { '??' }.join(', ')
-    else
-      cards.join(', ')
+    @players.each do |_idx, player|
+      puts player
     end
   end
 

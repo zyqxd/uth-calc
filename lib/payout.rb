@@ -8,15 +8,14 @@ class Payout
     'Straight' => 1,
   }
 
-  def initialize(player_hand, dealer_hand)
-    @player_hand = player_hand
-    @dealer_hand = dealer_hand
-    @dealer_qualified = dealer_hand.rank != 'Highest Card'
+  def initialize(player, dealer)
+    @player = player
+    @dealer = dealer
   end
 
   def value
-    is_win = @player_hand > @dealer_hand
-    is_loss = @player_hand < @dealer_hand
+    is_win = @player > @dealer
+    is_loss = @player < @dealer
     if is_loss
       - ante_value - play_value - 1 # -1 for blind
     elsif is_win && @dealer_qualified
@@ -33,7 +32,7 @@ class Payout
   end
 
   def blind_value
-    BLINDS_PAYOUT[@player_hand.rank] || 0
+    BLINDS_PAYOUT[@player.rank] || 0
   end
 
   # TODO
