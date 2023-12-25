@@ -3,11 +3,12 @@ class Player
 
   attr_reader :strategy, :player
 
-  def initialize(idx, board)
+  def initialize(idx, board, game = nil)
     @player = idx
     @board = board
     @strategy = Strategy.new
     @hand = PokerHand.new
+    @game = game
   end
 
   def play_preflop
@@ -19,11 +20,7 @@ class Player
   end
 
   def play_river
-    @strategy.river(@hand, @board)
-  end
-
-  def play_river
-    # TODO
+    @strategy.river(@hand, @board, @game)
   end
 
   def deal_hand(deck)
@@ -36,7 +33,7 @@ class Player
   end
 
   def rank
-    @hand.rank
+    full_hand.rank
   end
 
   def <=>(other)

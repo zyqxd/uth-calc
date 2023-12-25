@@ -14,11 +14,12 @@ class Payout
   end
 
   def value
+    strategy = @player.strategy
     is_win = @player.full_hand > @dealer.full_hand
     is_loss = @player.full_hand < @dealer.full_hand
-    strategy = @player.strategy
+    is_fold = strategy.play == 0
 
-    if is_loss
+    if is_loss || is_fold
       - strategy.ante - strategy.blind - strategy.play
     elsif is_win && @dealer.qualified?
       strategy.ante + strategy.play + blind_value(strategy.blind)
@@ -27,10 +28,6 @@ class Payout
     else
       0
     end
-  end
-
-  def ante_value
-    1
   end
 
   def blind_value(blind)

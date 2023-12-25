@@ -13,13 +13,13 @@ class Game
   def restart
     @board = Board.new
     @dealer = Dealer.new(@board)
-    @players = (0...@hands).map { |idx| Player.new(idx, @board) }
+    @players = (0...@hands).map { |idx| Player.new(idx, @board, self) }
     @deck = Deck.new
-    @value = 0
+    @value = 0.0
     @hands_won = 0
   end
 
-  def play
+  def play(print = false)
     deal_players(false)
     players.each(&:play_preflop)
     deal_flop(false)
@@ -28,18 +28,18 @@ class Game
     players.each(&:play_river)
     deal_dealer(false)
 
-    print_state
-    payout
+    print_state if print
+    payout(print)
   end
 
-  def payout
+  def payout(print = false)
     players.each do |player|
       payout = Payout.new(player, dealer).value
 
       @hands_won += 1 if payout > 0
       @value += payout
 
-      puts "Player #{ player.player } #{ payout == 0 ? 'TIE' : payout > 0 ? 'WIN' : 'LOSE' } #{ payout.abs }"
+      puts "Player #{ player.player } #{ payout == 0 ? 'TIE' : payout > 0 ? 'WIN' : 'LOSE' } #{ payout.abs }" if print
     end
 
     nil

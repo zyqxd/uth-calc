@@ -20,7 +20,7 @@ class Dealer
   end
 
   def rank
-    @hand.rank
+    full_hand.rank
   end
 
   def <=>(other)

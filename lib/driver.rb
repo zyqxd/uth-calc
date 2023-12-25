@@ -21,7 +21,7 @@ class Driver
 
   def play_hand
     game.restart
-    game.play
+    game.play(true)
 
     @hands_played += @hands
     @hands_won += game.hands_won
