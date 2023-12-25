@@ -3,16 +3,16 @@ class Dealer
 
   def initialize(board)
     @board = board
-    @hand = []
+    @hand = PokerHand.new
   end
 
   def qualified?
-    @board.full? &&
-      PokerHand.new(full_hand).rank != 'Highest Card'
+    @board.full? && full_hand.rank != 'Highest Card'
   end
 
   def deal_hand(deck)
-    @hand = [deck.draw, deck.draw]
+    @hand << deck.draw
+    @hand << deck.draw
   end
 
   def full_hand
@@ -20,11 +20,11 @@ class Dealer
   end
 
   def rank
-    PokerHand.new(full_hand).rank
+    @hand.rank
   end
 
   def <=>(other)
-    PokerHand.new(full_hand) <=> other
+    @hand <=> other
   end
 
   def to_s

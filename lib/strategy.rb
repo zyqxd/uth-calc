@@ -78,25 +78,23 @@ class Strategy
   def postflop(hand, board)
     return if play != 0
 
-    hand = PokerHand.new(hand + board)
+    combined = hand + board.cards
     if !['Three of a kind', 'Pair', 'Highest Card'].include?(hand.rank)
       @play = 2
 
-    elsif hand.rank == 'Pair'
-      if PokerHand.new(board).rank != 'Pair'
-        @play = 2
-      end
+    elsif combined.rank == 'Pair'
+      @play = 2 if board.rank != 'Pair'
 
-    elsif hand.rank == 'Three of a kind'
-      if PokerHand.new(board).rank != 'Three of a kind'
-        @play = 2
-      end
-    else # if hand.rank == 'Highest Card'
+    elsif combined.rank == 'Three of a kind'
+      @play = 2 if board.rank != 'Three of a kind'
+
+    else # if combined.rank == 'Highest Card'
       @play = 0
     end
   end
 
-  def payout(hand, board)
+  def river(hand, board)
+    # TODO
     # min pair or < 21 visible outs
   end
 end

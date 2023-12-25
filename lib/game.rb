@@ -1,5 +1,5 @@
 class Game
-  attr_reader :deck, :value, :players, :dealer, :board
+  attr_reader :deck, :value, :players, :dealer, :board, :hands_won
 
   # Assume bet size of 1
   # both ante and blind are 1 => one hand is 2
@@ -13,15 +13,19 @@ class Game
   def restart
     @board = Board.new
     @dealer = Dealer.new(@board)
-    @players = (0...@hands).map { |idx| [idx, Player.new(idx, @board)] }.to_h
+    @players = (0...@hands).map { |idx| Player.new(idx, @board) }
     @deck = Deck.new
     @value = 0
+    @hands_won = 0
   end
 
   def play
     deal_players(false)
+    players.each(&:play_preflop)
     deal_flop(false)
+    players.each(&:play_postflop)
     deal_postflop(false)
+    players.each(&:play_river)
     deal_dealer(false)
 
     print_state
@@ -29,14 +33,13 @@ class Game
   end
 
   def payout
-    dealer_hand = PokerHand.new(@dealer.full_hand)
+    players.each do |player|
+      payout = Payout.new(player, dealer).value
 
-    @players.each do |idx, player|
-      player_hand = PokerHand.new(player.full_hand)
-      payout = Payout.new(player_hand, dealer_hand).value
-
-      puts "Player #{ idx } #{ payout > 0 ? 'WINS' : 'LOSES' } #{ payout }"
+      @hands_won += 1 if payout > 0
       @value += payout
+
+      puts "Player #{ player.player } #{ payout == 0 ? 'TIE' : payout > 0 ? 'WIN' : 'LOSE' } #{ payout.abs }"
     end
 
     nil
@@ -48,7 +51,7 @@ class Game
     (0...@hands).each do |idx|
       player_idx = (starting_idx + idx) % 6
 
-      @players[player_idx].deal_hand(@deck)
+      players[player_idx].deal_hand(@deck)
     end
 
     print_state if print
@@ -77,9 +80,7 @@ class Game
     puts @dealer
     puts @board
 
-    @players.each do |_idx, player|
-      puts player
-    end
+    players.each { |player| puts player }
   end
 
   def inspect
