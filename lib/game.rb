@@ -6,7 +6,6 @@ class Game
   # If dealer makes, ante is paid 1:1
   # If deal does not, ante is pushed (returned)
   def initialize(hands)
-    @value = 0
     @hands = hands
     restart
   end
@@ -16,6 +15,7 @@ class Game
     @dealer = Dealer.new(@board)
     @players = (0...@hands).map { |idx| [idx, Player.new(idx, @board)] }.to_h
     @deck = Deck.new
+    @value = 0
   end
 
   def play
