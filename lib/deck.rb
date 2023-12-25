@@ -7,7 +7,7 @@ class Deck
   ]
 
   def initialize
-    @cards = FULL_DECK.dup.shuffle
+    @cards = FULL_DECK.dup.shuffle.map { |card| Card.new(card) }
   end
 
   def draw

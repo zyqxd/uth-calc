@@ -1,11 +1,10 @@
 class Player
   include Helpers::CardHelper
 
-  def initialize(idx, board, strategy = nil)
+  def initialize(idx, board)
     @player = idx
     @board = board
-    # TODO
-    @strategy = strategy
+    @strategy = Strategy.new
     @hand = []
   end
 
